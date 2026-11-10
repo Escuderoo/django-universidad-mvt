@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Estudiantes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<!-- Barra de Navegación -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'web_lista_estudiantes' %}">Academia</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'web_lista_estudiantes' %}">Estudiantes</a>
+                </li>
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link btn btn-primary text-white btn-sm px-3 ms-2" href="{% url 'web_crear_estudiante' %}">+ Nuevo Estudiante</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <!-- Alertas Flash -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <h2 class="mb-4">Lista de Estudiantes</h2>
+
+    <!-- FORMULARIO DE BÚSQUEDA Y BOTÓN LIMPIAR -->
+    <form method="get" class="row g-2 mb-4">
+        <div class="col-md-8">
+            <input type="text" name="q" class="form-control" placeholder="Buscar por nombre, apellido o matrícula..." value="{{ query }}">
+        </div>
+        <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </div>
+        <div class="col-md-2 d-grid">
+            <a href="?" class="btn btn-outline-secondary">Limpiar</a>
+        </div>
+    </form>
+
+    <table class="table table-striped table-hover bg-white shadow-sm rounded">
+        <thead class="table-dark">
+            <tr>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Matrícula</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for est in estudiantes %}
+            <tr>
+                <td>{{ est.nombre }}</td>
+                <td>{{ est.apellido }}</td>
+                <td>{{ est.matricula }}</td>
+                <td>
+                    <a href="{% url 'web_detalle_estudiante' est.pk %}" class="btn btn-info btn-sm">Ver</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'web_editar_estudiante' est.pk %}" class="btn btn-warning btn-sm">Editar</a>
+                        <a href="{% url 'web_eliminar_estudiante' est.pk %}" class="btn btn-danger btn-sm">Eliminar</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">No se encontraron estudiantes que coincidan con la búsqueda "{{ query }}".</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Paginación Adaptada con Parámetro de Búsqueda -->
+    {% if is_paginated %}
+    <nav>
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}">Anterior</a>
+                </li>
+            {% endif %}
+
+            <li class="page-item disabled">
+                <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            </li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}">Siguiente</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

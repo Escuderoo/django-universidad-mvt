@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Oferta Académica - Cursos</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+</head>
+<body class="container mt-4">
+
+    <!-- Cabecera y barra de navegación condicional -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-0">Catálogo de Cursos</h1>
+        <div>
+            {% if user.is_authenticated %}
+                <span class="me-2 text-dark fw-bold">Hola, <strong>{{ user.username }}</strong></span>
+                <a href="{% url 'web_crear_curso' %}" class="btn btn-success btn-sm me-2">Crear Nuevo Curso</a>
+                <form action="{% url 'logout' %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Cerrar Sesión</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-sm">Iniciar Sesión</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- BLOQUE DE MENSAJES FLASH DE RETROALIMENTACIÓN -->
+    {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Navegación adicional y contador -->
+    <div class="mb-3">
+        <a href="{% url 'web_lista_profesores' %}" class="btn btn-outline-secondary btn-sm">Ver profesores</a>
+    </div>
+
+    <p class="text-muted">Total de cursos disponibles: {{ cursos|length }}</p>
+
+    <!-- Listado de Cursos -->
+    <div class="row">
+        {% for curso in cursos %}
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ curso.nombre }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Código: {{ curso.codigo }}</h6>
+
+                        <p class="card-text">
+                            <strong>Profesor:</strong> 
+                            <a href="{% url 'web_detalle_profesor' curso.profesor.pk %}">{{ curso.profesor.nombre|upper }}</a>
+                        </p>
+                        <p class="card-text">
+                            <strong>Alumnos inscritos:</strong> {{ curso.estudiantes.count }}
+                        </p>
+
+                        <!-- Botones de acción por cada curso -->
+                        <div class="mt-3">
+                            <a href="{% url 'web_detalle_curso' curso.pk %}" class="btn btn-primary btn-sm">Ver Detalle</a>
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'web_editar_curso' curso.pk %}" class="btn btn-warning btn-sm">Editar</a>
+                                <a href="{% url 'web_eliminar_curso' curso.pk %}" class="btn btn-danger btn-sm">Eliminar</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-warning">No hay cursos registrados en el sistema.</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- COMPONENTE DE PAGINACIÓN BOOTSTRAP -->
+    {% if is_paginated %}
+    <nav class="mt-4 mb-5">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            </li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+</body>
+</html>
+{% if is_paginated %}
+<nav class="mt-4 mb-5">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+        {% endif %}
+
+        <li class="page-item active"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
+
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a></li>
+        {% else %}
+            <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+```[cite: 14]
+
+---
+
+### 2. En la vista de Inicio de Sesión / Login (Punto 2)
+El punto 2 pide agregar un mensaje informativo (`messages.info`) en la vista de login para dar la bienvenida al usuario al autenticarse. 
+
+Si utilizas una vista personalizada basada en la `LoginView` de Django, debes asegurarte de tener implementado algo así en tu código (para que puedas ponerlo de evidencia en la tabla)[cite: 25]:
+
+```python
+from django.contrib.auth.views import LoginView
+from django.contrib import messages
+
+class CustomLoginView(LoginView):
+    template_name = 'registration/login.html'
+
+    def form_valid(self, form):
+        usuario = form.get_user()
+        messages.info(self.request, f"¡Bienvenido de nuevo, {usuario.username}!")
+        return super().form_valid(form)

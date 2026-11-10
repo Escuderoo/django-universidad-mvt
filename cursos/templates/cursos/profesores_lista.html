@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Profesores</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="container mt-4">
+    <a href="{% url 'web_lista_cursos' %}" class="btn btn-outline-secondary mb-3">« Volver al catálogo</a>
+
+    <h1 class="mb-3">Profesores</h1>
+    <p class="text-muted">Total de profesores: {{ total_profesores }}</p>
+
+    <div class="row">
+        {% for profesor in profesores %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ profesor.nombre }}</h5>
+                    <p class="card-text">
+                        <strong>Cursos que dicta:</strong> {{ profesor.cursos.count }}
+                    </p>
+                    <a href="{% url 'web_detalle_profesor' profesor.pk %}" class="btn btn-primary btn-sm">
+                        Ver Detalle
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="alert alert-warning">No hay profesores registrados en el sistema.</div>
+        {% endfor %}
+    </div>
+</body>
+</html>
